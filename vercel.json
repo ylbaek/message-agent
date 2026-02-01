@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "api/*.py": {
+      "runtime": "@vercel/python@4.0.0",
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    { "source": "/api/chat", "destination": "/api/chat.py" },
+    { "source": "/api/ocr", "destination": "/api/ocr.py" }
+  ]
+}
