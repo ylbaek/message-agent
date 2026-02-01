@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>message-agent | Powered by Upstage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --upstage-primary: #7C5CFC;
+      --upstage-secondary: #6B4EE6;
+      --upstage-dark: #5A3ED9;
+      --upstage-light: #9B7FFF;
+      --upstage-bg: #F8F6FF;
+      --upstage-gradient: linear-gradient(135deg, #7C5CFC 0%, #9B7FFF 50%, #7C5CFC 100%);
+      --text-primary: #1a1a2e;
+      --text-secondary: #4a4a6a;
+      --text-light: #8888a8;
+      --white: #ffffff;
+      --shadow-sm: 0 2px 8px rgba(124, 92, 252, 0.1);
+      --shadow-md: 0 4px 20px rgba(124, 92, 252, 0.15);
+      --shadow-lg: 0 8px 40px rgba(124, 92, 252, 0.2);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--upstage-bg);
+      min-height: 100vh;
+      color: var(--text-primary);
+    }
+
+    .header {
+      background: var(--upstage-gradient);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-md);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-img {
+      height: 32px;
+      filter: brightness(0) invert(1);
+    }
+
+    .header-title {
+      color: var(--white);
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      padding-left: 20px;
+      border-left: 2px solid rgba(255,255,255,0.3);
+      letter-spacing: -0.5px;
+    }
+
+    .header-badge {
+      background: rgba(255,255,255,0.2);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .main-container {
+      max-width: 900px;
+      margin: 0 auto;
+      height: calc(100vh - 68px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tone-selector {
+      padding: 20px 24px;
+      background: var(--white);
+      border-bottom: 1px solid rgba(124, 92, 252, 0.1);
+    }
+
+    .tone-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tone-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tone-btn {
+      padding: 10px 20px;
+      border: 2px solid transparent;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #f0edff;
+      color: var(--upstage-primary);
+    }
+
+    .tone-btn:hover {
+      background: #e5e0ff;
+      transform: translateY(-2px);
+    }
+
+    .tone-btn.active {
+      background: var(--upstage-gradient);
+      color: var(--white);
+      box-shadow: var(--shadow-md);
+      transform: scale(1.05);
+    }
+
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .chat-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-area::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-area::-webkit-scrollbar-thumb {
+      background: var(--upstage-light);
+      border-radius: 3px;
+    }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      animation: fadeInUp 0.4s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .message.user .message-avatar {
+      background: linear-gradient(135deg, #FFE066 0%, #FFD43B 100%);
+    }
+
+    .message.assistant .message-avatar {
+      background: var(--upstage-gradient);
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .message-content {
+      max-width: 75%;
+      padding: 16px 20px;
+      border-radius: 20px;
+      line-height: 1.7;
+      font-size: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .message.user .message-content {
+      background: linear-gradient(135deg, #FFE066 0%, #FFD43B 100%);
+      color: var(--text-primary);
+      border-bottom-right-radius: 6px;
+    }
+
+    .message.assistant .message-content {
+      background: var(--white);
+      color: var(--text-primary);
+      border-bottom-left-radius: 6px;
+      border: 1px solid rgba(124, 92, 252, 0.1);
+    }
+
+    .message-image {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-sm);
+      max-height: 300px;
+      object-fit: contain;
+    }
+
+    .welcome-message {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--text-secondary);
+    }
+
+    .welcome-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--upstage-gradient);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 24px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .welcome-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .welcome-desc {
+      font-size: 15px;
+      line-height: 1.8;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .welcome-tip {
+      margin-top: 24px;
+      padding: 16px 20px;
+      background: rgba(124, 92, 252, 0.08);
+      border-radius: 12px;
+      display: inline-block;
+      font-size: 13px;
+      color: var(--upstage-primary);
+    }
+
+    .welcome-tip strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .input-area {
+      padding: 20px 24px;
+      background: var(--white);
+      border-top: 1px solid rgba(124, 92, 252, 0.1);
+      box-shadow: 0 -4px 20px rgba(124, 92, 252, 0.05);
+    }
+
+    .image-preview-container {
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .image-preview-container.active {
+      display: block;
+    }
+
+    .image-preview-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .image-preview {
+      max-height: 120px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .image-preview-remove {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 24px;
+      height: 24px;
+      background: #ff4757;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s;
+    }
+
+    .image-preview-remove:hover {
+      transform: scale(1.1);
+    }
+
+    .input-container {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid #e8e4f8;
+      border-radius: 16px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      min-height: 56px;
+      max-height: 150px;
+      transition: all 0.3s ease;
+      line-height: 1.5;
+    }
+
+    .text-input:focus {
+      outline: none;
+      border-color: var(--upstage-primary);
+      box-shadow: 0 0 0 4px rgba(124, 92, 252, 0.1);
+    }
+
+    .text-input::placeholder {
+      color: var(--text-light);
+    }
+
+    .text-input.drag-over {
+      border-color: var(--upstage-primary);
+      background: rgba(124, 92, 252, 0.05);
+    }
+
+    .btn {
+      width: 56px;
+      height: 56px;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-upload {
+      background: #f0edff;
+      color: var(--upstage-primary);
+    }
+
+    .btn-upload:hover {
+      background: #e5e0ff;
+      transform: scale(1.05);
+    }
+
+    .btn-send {
+      background: var(--upstage-gradient);
+      color: var(--white);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-send:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-send:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .loading {
+      display: flex;
+      gap: 6px;
+      padding: 8px 0;
+    }
+
+    .loading-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--upstage-primary);
+      border-radius: 50%;
+      animation: bounce 1.4s ease-in-out infinite;
+    }
+
+    .loading-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+      }
+      40% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--text-primary);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 640px) {
+      .header {
+        padding: 12px 16px;
+      }
+
+      .header-title {
+        font-size: 16px;
+        padding-left: 12px;
+      }
+
+      .logo-img {
+        height: 26px;
+      }
+
+      .tone-selector {
+        padding: 16px;
+      }
+
+      .tone-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+      }
+
+      .chat-area {
+        padding: 16px;
+      }
+
+      .message-content {
+        max-width: 85%;
+        padding: 14px 16px;
+      }
+
+      .input-area {
+        padding: 16px;
+      }
+
+      .btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+      }
+
+      .text-input {
+        padding: 14px 16px;
+        min-height: 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <img src="logo.png" alt="Upstage" class="logo-img">
+      <span class="header-title">message-agent</span>
+    </div>
+    <span class="header-badge">Solar Pro</span>
+  </header>
+
+  <main class="main-container">
+    <div class="tone-selector">
+      <div class="tone-label">
+        🎨 답장 톤 선택
+      </div>
+      <div class="tone-buttons">
+        <button class="tone-btn" data-tone="polite" onclick="setTone('polite')">
+          🙇 매우 공손
+        </button>
+        <button class="tone-btn active" data-tone="neutral" onclick="setTone('neutral')">
+          😊 중립적
+        </button>
+        <button class="tone-btn" data-tone="active" onclick="setTone('active')">
+          💪 적극적
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+      <div class="welcome-message">
+        <div class="welcome-icon">💬</div>
+        <h2 class="welcome-title">카톡 답장, 이제 쉽게!</h2>
+        <p class="welcome-desc">
+          상사나 동료에게 받은 카톡 메시지를 입력하거나<br>
+          캡쳐 이미지를 업로드하면<br>
+          상황에 맞는 답장을 추천해 드려요.
+        </p>
+        <div class="welcome-tip">
+          <strong>💡 TIP</strong>
+          Ctrl+V로 클립보드 이미지를 바로 붙여넣을 수 있어요!
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="image-preview-container" id="imagePreviewContainer">
+        <div class="image-preview-wrapper">
+          <img src="" alt="미리보기" class="image-preview" id="imagePreview">
+          <button class="image-preview-remove" onclick="removeImage()">×</button>
+        </div>
+      </div>
+      <div class="input-container">
+        <input type="file" class="file-input" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+        <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()" title="이미지 업로드">
+          📷
+        </button>
+        <div class="input-wrapper">
+          <textarea 
+            class="text-input" 
+            id="textInput" 
+            placeholder="카톡 대화 내용을 입력하거나, 이미지를 Ctrl+V로 붙여넣으세요..."
+            onkeydown="handleKeyDown(event)"
+            rows="1"
+          ></textarea>
+        </div>
+        <button class="btn btn-send" id="sendBtn" onclick="sendMessage()" disabled>
+          ➤
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let currentTone = 'neutral';
+    let isLoading = false;
+    let pendingImage = null;
+    let pendingImageBase64 = null;
+
+    const chatArea = document.getElementById('chatArea');
+    const textInput = document.getElementById('textInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+
+    textInput.addEventListener('input', function() {
+      updateSendButton();
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+    });
+
+    // 클립보드 붙여넣기
+    document.addEventListener('paste', function(event) {
+      const items = event.clipboardData?.items;
+      if (!items) return;
+
+      for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+          event.preventDefault();
+          const file = item.getAsFile();
+          handleImageFile(file);
+          break;
+        }
+      }
+    });
+
+    // 드래그 앤 드롭
+    textInput.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      this.classList.add('drag-over');
+    });
+
+    textInput.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+    });
+
+    textInput.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].type.startsWith('image/')) {
+        handleImageFile(files[0]);
+      }
+    });
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) handleImageFile(file);
+      event.target.value = '';
+    }
+
+    function handleImageFile(file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('이미지 파일만 업로드할 수 있습니다.');
+        return;
+      }
+
+      pendingImage = file;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        pendingImageBase64 = e.target.result;
+        imagePreview.src = pendingImageBase64;
+        imagePreviewContainer.classList.add('active');
+        updateSendButton();
+        showToast('이미지가 추가되었습니다!');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+      pendingImage = null;
+      pendingImageBase64 = null;
+      imagePreviewContainer.classList.remove('active');
+      imagePreview.src = '';
+      updateSendButton();
+    }
+
+    function updateSendButton() {
+      const hasText = textInput.value.trim().length > 0;
+      const hasImage = pendingImage !== null;
+      sendBtn.disabled = (!hasText && !hasImage) || isLoading;
+    }
+
+    function setTone(tone) {
+      currentTone = tone;
+      document.querySelectorAll('.tone-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tone === tone);
+      });
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        if (!sendBtn.disabled) sendMessage();
+      }
+    }
+
+    async function sendMessage() {
+      const text = textInput.value.trim();
+      const hasImage = pendingImage !== null;
+      
+      if ((!text && !hasImage) || isLoading) return;
+
+      const welcome = chatArea.querySelector('.welcome-message');
+      if (welcome) welcome.remove();
+
+      const userContent = text || '이미지를 분석해 주세요';
+      addMessage('user', userContent, hasImage ? pendingImageBase64 : null);
+
+      const imageToProcess = pendingImage;
+      const textToProcess = text;
+      
+      textInput.value = '';
+      textInput.style.height = 'auto';
+      removeImage();
+      
+      isLoading = true;
+      updateSendButton();
+      showLoading();
+
+      try {
+        let result;
+        
+        if (imageToProcess) {
+          result = await processWithOCR(imageToProcess, textToProcess);
+        } else {
+          result = await generateReply(textToProcess);
+        }
+
+        hideLoading();
+        addMessage('assistant', result);
+      } catch (error) {
+        hideLoading();
+        addMessage('assistant', `오류가 발생했습니다: ${error.message}`);
+      }
+
+      isLoading = false;
+      updateSendButton();
+    }
+
+    async function processWithOCR(imageFile, additionalText) {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('tone', currentTone);
+      if (additionalText) {
+        formData.append('text', additionalText);
+      }
+
+      const response = await fetch('/api/ocr', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'OCR 처리 중 오류가 발생했습니다.');
+      }
+
+      const data = await response.json();
+      return data.reply;
+    }
+
+    async function generateReply(text) {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          tone: currentTone
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'API 호출 중 오류가 발생했습니다.');
+      }
+
+      const data = await response.json();
+      return data.reply;
+    }
+
+    function addMessage(role, content, image = null) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+
+      const avatarContent = role === 'user' ? '👤' : 'AI';
+      
+      let imageHtml = '';
+      if (image) {
+        imageHtml = `<img src="${image}" class="message-image" alt="업로드된 이미지">`;
+      }
+
+      let formattedContent = content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${avatarContent}</div>
+        <div class="message-content">
+          ${imageHtml}
+          ${formattedContent}
+        </div>
+      `;
+
+      chatArea.appendChild(messageDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function showLoading() {
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message assistant';
+      loadingDiv.id = 'loadingMessage';
+      loadingDiv.innerHTML = `
+        <div class="message-avatar">AI</div>
+        <div class="message-content">
+          <div class="loading">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+          </div>
+        </div>
+      `;
+      chatArea.appendChild(loadingDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function hideLoading() {
+      const loading = document.getElementById('loadingMessage');
+      if (loading) loading.remove();
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>

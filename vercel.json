@@ -1,0 +1,26 @@
+{
+  "functions": {
+    "api/chat.py": {
+      "runtime": "python3.9",
+      "maxDuration": 60
+    },
+    "api/ocr.py": {
+      "runtime": "python3.9",
+      "maxDuration": 60
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/chat",
+      "dest": "/api/chat.py"
+    },
+    {
+      "src": "/api/ocr",
+      "dest": "/api/ocr.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
